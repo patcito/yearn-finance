@@ -13,7 +13,9 @@ export const drizzleWeb3Middleware = drizzleWeb3 => store => next => action => {
     // eslint-disable-next-line no-param-reassign
     const batchCall = new BatchCall({
       provider:
-        'https://eth-mainnet.alchemyapi.io/v2/k2--UT_xVVXMOvAyoxJYqtKhlmyBbqnX',
+        process.env.NODE_ENV !== 'production'
+          ? 'https://eth-mainnet.alchemyapi.io/v2/XLj2FWLNMB4oOfFjbnrkuOCcaBIhipOJ'
+          : 'https://eth-mainnet.alchemyapi.io/v2/k2--UT_xVVXMOvAyoxJYqtKhlmyBbqnX',
       etherscan: {
         apiKey: 'GEQXZDY67RZ4QHNU1A57QVPNDV3RP1RYH4',
       },
