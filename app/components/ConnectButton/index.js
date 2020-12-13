@@ -22,6 +22,10 @@ export default function ConnectButton(props) {
   const account = useAccount();
   const selectWallet = useSelectWallet();
   let content;
+
+  if (window.location.pathname === '/') {
+    return <StyledButton>Launch App</StyledButton>;
+  }
   if (wallet.provider && account) {
     content = (
       <ConnectedAccount
