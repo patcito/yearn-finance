@@ -1,4 +1,8 @@
-module.exports = {
+const { darken } = require('polished');
+
+const blue = '#0657F9';
+
+const config = {
   purge: [],
   darkMode: false, // or 'media' or 'class'
   theme: {
@@ -13,10 +17,11 @@ module.exports = {
         secondary: 'var(--color-secondary)',
         whiteAlt: 'var(--color-white-alt)',
         yearn: {
-          blue: '#0657F9',
           green: '#23D198',
           red: '#EF1E02',
           yellow: '#FABF06',
+          blue,
+          blueDark: darken('0.5')(blue),
         },
       },
       keyframes: {
@@ -45,3 +50,5 @@ module.exports = {
   },
   plugins: [],
 };
+
+module.exports = config;

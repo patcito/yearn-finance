@@ -87,7 +87,7 @@ const LinkWrap = props => {
   );
 };
 
-const Vault = props => {
+const VaultComponent = props => {
   const { vault, showDevVaults, active } = props;
   const vaultContractData = useSelector(selectContractData(vault.address));
   _.merge(vault, vaultContractData);
@@ -241,5 +241,8 @@ const Vault = props => {
     </React.Fragment>
   );
 };
-Vault.whyDidYouRender = true;
-export default compose(memo)(Vault);
+
+VaultComponent.whyDidYouRender = true;
+const Vault = compose(memo)(VaultComponent);
+export default Vault;
+export { Vault };

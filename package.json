@@ -116,6 +116,7 @@
     "md5": "^2.3.0",
     "minimist": "1.2.0",
     "module": "^1.2.5",
+    "polished": "^4.0.5",
     "postcss": "^7",
     "prop-types": "15.7.2",
     "react": "16.14.0",
