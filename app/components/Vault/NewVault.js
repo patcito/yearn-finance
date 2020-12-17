@@ -146,7 +146,7 @@ const VaultComponent = props => {
 
   return (
     <div tw="shadow-md">
-      <div tw="w-full overflow-hidden border-t">
+      <div tw="w-full border-t flex-wrap">
         <input
           tw="absolute opacity-0"
           id="tab-single-one"
@@ -155,14 +155,14 @@ const VaultComponent = props => {
           onChange={() => setIsOpen(!isOpen)}
         />
         <label
-          tw="flex px-5 py-2 cursor-pointer bg-yearn-blue rounded-lg"
+          tw="flex px-5 py-2 cursor-pointer bg-yearn-blue rounded-lg flex-wrap"
           css={[
             isOpen &&
               tw`ring-gray-100 ring-opacity-50 rounded-bl-none rounded-br-none`,
           ]}
           htmlFor="tab-single-one"
         >
-          <div tw="flex flex-row font-black text-xl text-white justify-between items-center w-full">
+          <div tw="flex flex-row flex-wrap font-black text-xl text-white justify-between items-center w-full">
             <IconAndName>
               <LinkWrap devMode={devMode} address={address}>
                 <StyledTokenIcon address={tokenContractAddress} />
@@ -206,24 +206,39 @@ const VaultComponent = props => {
         <div
           css={[
             tw`
-              overflow-hidden leading-normal max-h-0 transition transform ease-out 
+              leading-normal max-h-0 transition transform ease-out 
+              flex-wrap
               duration-200 divide-yearn-blue divide-y-2 rounded-md rounded-tl-none rounded-tr-none
             `,
             isOpen && tw`max-h-full`,
           ]}
         >
-          <div tw="bg-yearn-blueDark px-5 py-4 text-white font-bold flex justify-between">
+          <div tw="bg-yearn-blueDark px-5 py-4 text-white font-bold flex justify-between flex-wrap">
             <span>Vault infos:</span>
             <span>???</span>
             <span>???</span>
             <MoreInfoLink href="/more-info" />
           </div>
-          <p tw="flex justify-between px-5 py-4 bg-yearn-blueDark text-white">
+          <div tw="flex flex-wrap justify-between px-5 py-4 bg-yearn-blueDark text-white">
             <span>Earnings:</span>
             <Earning type="Historical Earnings" value="2.156" />
             <Earning type="Projected Earnings" value="2.156" />
             <Earning type="Available to Withdraw" value="2.156" />
-          </p>
+          </div>
+          <div tw="bg-yearn-blueDark px-5 py-4 text-white font-bold flex justify-end space-x-4">
+            <button
+              type="button"
+              tw="bg-yearn-blue px-4 py-2 text-white rounded-md w-36 text-sm"
+            >
+              Deposit
+            </button>
+            <button
+              type="button"
+              tw="bg-yearn-blue px-4 py-2 text-white rounded-md w-36 text-sm"
+            >
+              Withdraw
+            </button>
+          </div>
         </div>
       </div>
     </div>
