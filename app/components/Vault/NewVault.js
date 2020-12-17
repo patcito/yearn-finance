@@ -52,13 +52,14 @@ const LinkWrap = props => {
   );
 };
 
-const Earning = () => (
+const Earning = ({ type, value }) => (
   <div>
-    <span>2.156</span>
-    <div tw="flex space-x-2 items-center">
-      <span>Historical earnings</span>
-      <div tw="text-white w-5 h-5">
+    <span>{value}</span>
+    <div tw="flex space-x-2 items-center justify-center">
+      <span>{type}</span>
+      <div tw="text-white w-5 h-5 flex items-center justify-center">
         <svg
+          tw="cursor-pointer"
           width="16"
           height="17"
           viewBox="0 0 16 17"
@@ -77,6 +78,28 @@ const Earning = () => (
       </div>
     </div>
   </div>
+);
+
+const MoreInfoLink = ({ href }) => (
+  <a
+    href={href}
+    tw="flex justify-center items-center self-end text-white bg-yearn-blue rounded-sm p-1"
+  >
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 17 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8.0332 18.3334C8.0332 18.8857 8.48092 19.3334 9.0332 19.3334C9.58549 19.3334 10.0332 18.8857 10.0332 18.3334V1.66671C10.0332 1.11442 9.58549 0.666708 9.0332 0.666708C8.48092 0.666708 8.0332 1.11442 8.0332 1.66671V18.3334ZM15.0332 19.3334C14.4809 19.3334 14.0332 18.8857 14.0332 18.3334V7.00004C14.0332 6.44776 14.4809 6.00004 15.0332 6.00004C15.5855 6.00004 16.0332 6.44776 16.0332 7.00004V18.3334C16.0332 18.5986 15.9278 18.8529 15.7403 19.0405C15.5528 19.228 15.2984 19.3334 15.0332 19.3334ZM2.0332 18.3334L2.0332 9.66671C2.0332 9.11442 2.48092 8.66671 3.0332 8.66671C3.58549 8.66671 4.0332 9.11442 4.0332 9.66671L4.0332 18.3334C4.0332 18.8857 3.58549 19.3334 3.0332 19.3334C2.48092 19.3334 2.0332 18.8857 2.0332 18.3334Z"
+        fill="white"
+      />
+    </svg>
+  </a>
 );
 
 const VaultComponent = props => {
@@ -193,12 +216,13 @@ const VaultComponent = props => {
             <span>Vault infos:</span>
             <span>???</span>
             <span>???</span>
+            <MoreInfoLink href="/more-info" />
           </div>
           <p tw="flex justify-between px-5 py-4 bg-yearn-blueDark text-white">
             <span>Earnings:</span>
-            <Earning />
-            <Earning />
-            <Earning />
+            <Earning type="Historical Earnings" value="2.156" />
+            <Earning type="Projected Earnings" value="2.156" />
+            <Earning type="Available to Withdraw" value="2.156" />
           </p>
         </div>
       </div>
