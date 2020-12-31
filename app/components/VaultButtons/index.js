@@ -231,7 +231,7 @@ export default function VaultButtons(props) {
     openModal('transaction', modalArgs);
   };
 
-  const tokenContractAddress = tokenAddress || tokenAddressAlt;
+  const tokenContractAddress = token.address;
   const tokenContract =
     tokenContractAddress && drizzle.findContractByAddress(tokenContractAddress);
 

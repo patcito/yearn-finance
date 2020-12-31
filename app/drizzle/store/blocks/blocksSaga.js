@@ -192,7 +192,20 @@ function* processBlock({ block, drizzle, web3, syncAlways }) {
         account.replace(/0x/, ''),
       );
       const toMatch = _.endsWith(to.toLowerCase(), account.replace(/0x/, ''));
+
+      const toContract = drizzle.findContractByAddress(to.toLowerCase());
+      if (toContract) {
+        contractsPendingSync[to] = toContract;
+      }
+
+      const fromContract = drizzle.findContractByAddress(from.toLowerCase());
+
+      if (fromContract) {
+        contractsPendingSync[from] = fromContract;
+      }
+
       const transactionAffectsUser = fromMatch || toMatch;
+
       if (transactionAffectsUser) {
         const contract = drizzle.findContractByAddress(address.toLowerCase());
         const checksumAddress = web3.utils.toChecksumAddress(address);

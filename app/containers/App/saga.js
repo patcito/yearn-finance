@@ -15,13 +15,15 @@ import { APP_READY, APP_INITIALIZED } from './constants';
 
 function* loadVaultContracts() {
   const vaults = yield select(selectVaults());
+
   const vaultAddresses = _.map(vaults, vault => vault.address);
   const account = yield select(selectAccount());
   const localContracts = JSON.parse(
     localStorage.getItem('watchedContracts') || '[]',
   );
 
-  const vaultTokenAddresses = _.map(vaults, vault => vault.tokenAddress);
+  const vaultTokenAddresses = _.map(vaults, vault => vault.token.address);
+
   const contracts = [
     {
       namespace: 'vaults',
@@ -80,12 +82,14 @@ function* loadVaultContracts() {
 
   const generateVaultTokenAllowanceSubscriptions = vault => {
     const vaultAddress = vault.address;
-    const { tokenAddress } = vault;
+    const {
+      token: { address },
+    } = vault;
     return {
       namespace: 'tokens',
       abi: erc20Abi,
       syncOnce: true,
-      addresses: [tokenAddress],
+      addresses: [address],
       readMethods: [
         {
           name: 'allowance',

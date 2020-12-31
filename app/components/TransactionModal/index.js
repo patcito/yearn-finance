@@ -246,6 +246,7 @@ export default function TransactionModal(props) {
     const decimals = _.get(inputArg, 'decimals');
     const defaultValueOriginal = _.get(inputArg, 'defaultValue', '');
     let defaultValue = defaultValueOriginal;
+    console.log('fdddd', inputName, inputArgs);
     if (decimals) {
       const defaultValueNormalized = new BigNumber(defaultValueOriginal)
         .dividedBy(10 ** decimals)

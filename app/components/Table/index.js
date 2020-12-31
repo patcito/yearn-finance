@@ -59,6 +59,9 @@ const Thead = styled.thead`
 export default function Table(props) {
   const { data, className, tableData } = props;
   const { columns, rows, rowClickHandler, title } = data;
+  if (!_.size(rows)) {
+    return <React.Fragment />;
+  }
 
   const renderHeader = (column, idx) => {
     const { alias, key } = column;

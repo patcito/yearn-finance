@@ -43,6 +43,28 @@ export const selectContracts = namespace =>
     substate => _.filter(substate, { namespace }),
   );
 
+export const selectContractsFlat = namespace =>
+  createSelector(
+    selectContractsData,
+    substate => {
+      const data = _.filter(substate, { namespace });
+      const flatten = data1 => {
+        const newData = {};
+        const flattenData1 = (val, key) => {
+          if (_.isArray(val)) {
+            newData[key] = val[0].value;
+          } else {
+            newData[key] = val;
+          }
+        };
+        _.each(data1, flattenData1);
+        return newData;
+      };
+      const flattenedData = _.map(data, flatten);
+      return flattenedData;
+    },
+  );
+
 export const selectContractsByTag = tag =>
   createSelector(
     selectContractsData,

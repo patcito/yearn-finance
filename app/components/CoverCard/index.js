@@ -207,7 +207,7 @@ export default function CoverCard(props) {
     }
     cardContent = (
       <React.Fragment>
-        <Top>
+        {/*        <Top>
           <div>
             <PercentLeft>5% left</PercentLeft>
             <TotalCollateral>
@@ -217,7 +217,7 @@ export default function CoverCard(props) {
           <div>
             <Stats type="stats" />
           </div>
-        </Top>
+        </Top>*/}
         <Middle>
           <StyledTokenIcon address={protocolTokenAddress} />
           <ProtocolName>{protocolDisplayName}</ProtocolName>
