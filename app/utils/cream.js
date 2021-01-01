@@ -69,6 +69,7 @@ export const getSupplyData = ({
     const allowed = _.get(allowanceObject, 'value') > 0;
 
     return {
+      creamCTokenAddress,
       apy: supplyAPY,
       asset: underlyingTokenData,
       wallet: walletBalance,
@@ -123,6 +124,7 @@ export const getBorrowData = ({
 
     const underlying = underlyingTokenData;
     return {
+      creamCTokenAddress,
       apy: borrowAPY,
       asset: underlyingTokenData,
       wallet: walletBalance,

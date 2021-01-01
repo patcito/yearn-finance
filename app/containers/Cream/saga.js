@@ -2,6 +2,7 @@ import comptrollerAbi from 'abi/creamComptroller.json';
 import priceOracleAbi from 'abi/creamPriceOracle.json';
 import CErc20DelegatorAbi from 'abi/CErc20Delegator.json';
 import erc20Abi from 'abi/erc20.json';
+import { useSelector } from 'react-redux';
 import { selectAccount } from 'containers/ConnectionProvider/selectors';
 import { selectReady } from 'containers/App/selectors';
 import { APP_READY } from 'containers/App/constants';
@@ -9,6 +10,7 @@ import {
   COMPTROLLER_ADDRESS,
   PRICE_ORACLE_ADDRESS,
   INITIALIZE_CREAM,
+  CREAM_ENTER_MARKETS,
 } from 'containers/Cream/constants';
 
 import { addContracts } from 'containers/DrizzleProvider/actions';
@@ -153,7 +155,23 @@ function* subscribeToCreamData(action) {
   yield put(addContracts(subscriptions));
 }
 
+function* executeEnterMarkets(action) {
+  const account = yield select(selectAccount());
+  const web3 = _.get(action, 'web3');
+  const creamComptrollerContract = new web3.eth.Contract(
+    comptrollerAbi,
+    COMPTROLLER_ADDRESS,
+  );
+  const cTokenAddress = _.get(action, 'cTokenAddress');
+  console.log(cTokenAddress);
+  yield call(
+    creamComptrollerContract.methods.enterMarkets([cTokenAddress]).send,
+    { from: account },
+  );
+}
+
 export default function* watchers() {
   yield takeLatest(APP_READY, subscribeToCreamData);
   yield takeLatest(INITIALIZE_CREAM, subscribeToCreamData);
+  yield takeLatest(CREAM_ENTER_MARKETS, executeEnterMarkets);
 }
