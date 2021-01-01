@@ -8,6 +8,7 @@ import {
   selectBorrowStats,
   selectCollateralEnabled,
 } from 'containers/Cream/selectors';
+import erc20Abi from 'abi/erc20.json';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
 import TokenIcon from 'components/TokenIcon';
@@ -19,8 +20,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import InfoCard from 'components/InfoCard';
 import { BigNumber } from 'bignumber.js';
 import { useAccount, useWeb3 } from 'containers/ConnectionProvider/hooks';
+import ButtonFilled from 'components/ButtonFilled';
+import { flattenData } from 'utils/contracts';
 import saga from './saga';
 import { initializeCream, creamEnterMarkets } from './actions';
+
+const MAX_UINT256 = new BigNumber(2)
+  .pow(256)
+  .minus(1)
+  .toFixed(0);
 
 const Wrapper = styled.div`
   margin: 0 auto;
@@ -78,6 +86,7 @@ export default function Cream() {
   useInjectSaga({ key: 'cream', saga });
   const dispatch = useDispatch();
   const web3 = useWeb3();
+  const account = useAccount();
 
   const initialize = () => {
     dispatch(initializeCream());
@@ -120,36 +129,6 @@ export default function Cream() {
     openModal('cream', row);
   };
 
-  // const boolTransform = val => (val ? 'yes' : 'no');
-
-  // const CollateralToggle = props => {
-  //   const {
-  //     // enabled,
-  //     rowData,
-  //   } = props;
-  //   // console.log(rowData);
-  //   const borrowLimit = _.get(rowData, 'borrowLimit');
-  //   const cTokenAddress = _.get(rowData, 'asset.address');
-  //   // NOTE - comptrollerAddress gets approval for token?
-  //   const marketEntered = Boolean(new BigNumber(borrowLimit).gt(0));
-  //   return (
-  //     <input
-  //       type="checkbox"
-  //       checked={marketEntered}
-  //       onChange={() => {
-  //         if (marketEntered) {
-  //           return;
-  //         }
-  //         dispatch(creamEnterMarkets(comptrollerContract, cTokenAddress));
-  //       }}
-  //     />
-  //   );
-  // };
-
-  // const collateralTransform = (enabled, rowData) => (
-  //   <CollateralToggle enabled={enabled} rowData={rowData} />
-  // );
-
   const borrowActionsTransform = (val, row) => {
     let withdrawButton;
     if (row.borrowed > 0) {
@@ -165,11 +144,63 @@ export default function Cream() {
 
   const allActionsTransform = (_rowValue, rowData) => {
     const creamCTokenAddress = _.get(rowData, 'creamCTokenAddress');
-    const tokenAddress = _.get(rowData, 'asset.address');
-    // NOTE - tokenAddress gets approval for token next?
+    const token = _.get(rowData, 'asset');
+    const tokenContractAddress = _.get(token, 'address');
+    const allowances = _.get(token, 'allowance');
+    const tokenAllowanceObject = _.find(allowances, allowance =>
+      _.includes(allowance.args, creamCTokenAddress),
+    );
+    const tokenAllowance = _.get(tokenAllowanceObject, 'value');
+    const crTokenAllowedToSpendToken = tokenAllowance > 0;
     const marketEntered = selectCollateralEnabledData.includes(
       creamCTokenAddress,
     );
+
+    const erc20Contract = new web3.eth.Contract(erc20Abi, tokenContractAddress);
+
+    const approveToken = async () => {
+      try {
+        await erc20Contract.methods
+          .approve(creamCTokenAddress, MAX_UINT256)
+          .send({ from: account });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    let enableCollateral;
+
+    if (marketEntered) {
+      if (crTokenAllowedToSpendToken) {
+        enableCollateral = <div>Approved and Ready!</div>;
+      } else {
+        enableCollateral = (
+          <ButtonFilled
+            variant="contained"
+            color="primary"
+            onClick={approveToken}
+          >
+            Approve Token
+          </ButtonFilled>
+        );
+      }
+    } else {
+      enableCollateral = (
+        <ButtonFilled
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            if (marketEntered) {
+              // TODO: Exit Market, meh
+              return;
+            }
+            dispatch(creamEnterMarkets(web3, creamCTokenAddress));
+          }}
+        >
+          Enter Market
+        </ButtonFilled>
+      );
+    }
 
     return (
       <Buttons>
@@ -185,17 +216,7 @@ export default function Cream() {
         >
           Borrow
         </IconButton>
-        <input
-          type="checkbox"
-          checked={marketEntered}
-          onChange={() => {
-            if (marketEntered) {
-              // TODO: Exit Market, meh
-              return;
-            }
-            dispatch(creamEnterMarkets(web3, creamCTokenAddress));
-          }}
-        />
+        {enableCollateral}
       </Buttons>
     );
   };
