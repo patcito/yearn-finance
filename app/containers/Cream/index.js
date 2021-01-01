@@ -197,7 +197,7 @@ export default function Cream() {
             dispatch(creamEnterMarkets(web3, creamCTokenAddress));
           }}
         >
-          Enter Market
+          Enter Market/Enable
         </ButtonFilled>
       );
     }

@@ -3,6 +3,8 @@ import Modal from 'react-bootstrap/Modal';
 import styled from 'styled-components';
 import TabbedNavigation from 'components/TabbedNavigation';
 import BigNumber from 'bignumber.js';
+import { useAccount, useWeb3 } from 'containers/ConnectionProvider/hooks';
+import CErc20DelegatorAbi from 'abi/CErc20Delegator.json';
 const StyledButton = styled.button`
   width: 80px;
   height: 50px;
@@ -53,6 +55,8 @@ export default function CreamModal(props) {
   //   console.log('enable');
   // };
 
+  const account = useAccount();
+  const web3 = useWeb3();
   const amountRef = useRef({ current: {} });
   const amountRefNormalized = useRef(null);
   // const allowed = _.get(modalMetadata, 'allowed', false);
@@ -60,15 +64,38 @@ export default function CreamModal(props) {
   const decimals = _.get(modalMetadata, 'asset.decimals[0].value', false);
   const balanceOf = _.get(modalMetadata, 'asset.balanceOf[0].value', false);
   const suppliedNormalized = _.get(modalMetadata, 'supplied', false);
+  const creamCTokenAddress = _.get(modalMetadata, 'creamCTokenAddress');
   const balanceOfNormalized = new BigNumber(balanceOf)
     .dividedBy(10 ** decimals)
     .toFixed(4);
-  const supply = () => {
-    console.log('supply', amountRef.current.value);
+
+  const supply = async () => {
+    try {
+      const crTokenContract = new web3.eth.Contract(
+        CErc20DelegatorAbi,
+        creamCTokenAddress,
+      );
+      await crTokenContract.methods
+        .mint(amountRef.current.value)
+        .send({ from: account });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const withdraw = () => {
-    console.log('withdraw');
+  const withdraw = async () => {
+    try {
+      const crTokenContract = new web3.eth.Contract(
+        CErc20DelegatorAbi,
+        creamCTokenAddress,
+      );
+      // NOTE - Is it redeem? Same function signature as mint tbf
+      await crTokenContract.methods
+        .redeem(amountRef.current.value)
+        .send({ from: account });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const setMax = () => {

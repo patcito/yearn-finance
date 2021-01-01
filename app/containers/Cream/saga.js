@@ -117,6 +117,7 @@ function* subscribeToCreamData(action) {
       tags: ['creamCTokens'],
       abi: CErc20DelegatorAbi,
       addresses: cTokenAddresses,
+      allWriteMethods: true,
       readMethods: [
         { name: 'name' },
         { name: 'symbol' },
