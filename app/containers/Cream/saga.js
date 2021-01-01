@@ -20,6 +20,7 @@ import {
   setContext,
   getContext,
 } from 'redux-saga/effects';
+import BigNumber from 'bignumber.js';
 
 function* subscribeToCreamData(action) {
   const initialized = yield getContext('initialized');
@@ -96,6 +97,7 @@ function* subscribeToCreamData(action) {
       namespace: 'creamComptroller',
       abi: comptrollerAbi,
       addresses: [COMPTROLLER_ADDRESS],
+
       readMethods: _.concat(
         [
           {
@@ -125,6 +127,10 @@ function* subscribeToCreamData(action) {
           name: 'balanceOf',
           args: [account],
         },
+        // {
+        //   name: 'allowance',
+        //   args: [account, cTokenAddresses],
+        // },
         {
           name: 'borrowBalanceStored',
           args: [account],

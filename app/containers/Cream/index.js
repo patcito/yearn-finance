@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import {
   selectContractsByTag,
   selectAllContracts,
+  selectTokenAllowance,
 } from 'containers/App/selectors';
 import { selectBorrowStats } from 'containers/Cream/selectors';
+import { COMPTROLLER_ADDRESS } from 'containers/Cream/constants';
 import styled from 'styled-components';
 import { useInjectSaga } from 'utils/injectSaga';
 import TokenIcon from 'components/TokenIcon';
@@ -68,18 +70,6 @@ const percentTransform = val => `${val}%`;
 
 // const dollarTransform = val => `$${val}`;
 
-// const CollateralToggle = props => {
-//   const { enabled } = props;
-//   if (enabled) {
-//     return 'yes';
-//   }
-//   return 'no';
-// };
-
-// const collateralTransform = (enabled, rowData) => (
-//   <CollateralToggle enabled={enabled} rowData={rowData} />
-// );
-
 export default function Cream() {
   useInjectSaga({ key: 'cream', saga });
   const dispatch = useDispatch();
@@ -118,10 +108,40 @@ export default function Cream() {
   const suppliedData = _.filter(supplyDataSorted, data => data.supplied > 0);
 
   const supplyRowClickHandler = row => {
+    console.log({ row });
+    openModal('cream', row);
+  };
+
+  const borrowRowClickHandler = row => {
+    console.log({ row });
     openModal('cream', row);
   };
 
   // const boolTransform = val => (val ? 'yes' : 'no');
+
+  const CollateralToggle = props => {
+    const {
+      // enabled,
+      rowData,
+    } = props;
+    // console.log(rowData);
+    const tokenAddress = _.get(rowData, 'asset.address');
+    // NOTE - comptrollerAddress gets approval for token?
+    const compTrollerAllowance = useSelector(
+      selectTokenAllowance(tokenAddress, COMPTROLLER_ADDRESS),
+    );
+    return (
+      <input
+        type="checkbox"
+        checked={Boolean(compTrollerAllowance)}
+        onChange={() => {}}
+      />
+    );
+  };
+
+  const collateralTransform = (enabled, rowData) => (
+    <CollateralToggle enabled={enabled} rowData={rowData} />
+  );
 
   const borrowActionsTransform = (val, row) => {
     let withdrawButton;
@@ -136,10 +156,20 @@ export default function Cream() {
     );
   };
 
-  const allActionsTransform = () => (
+  const allActionsTransform = (_rowValue, row) => (
     <Buttons>
-      <IconButton iconType="arrowUpAlt">Supply</IconButton>
-      <IconButton iconType="arrowDownAlt">Borrow</IconButton>
+      <IconButton
+        iconType="arrowUpAlt"
+        onClick={() => supplyRowClickHandler(row)}
+      >
+        Supply
+      </IconButton>
+      <IconButton
+        iconType="arrowDownAlt"
+        onClick={() => borrowRowClickHandler(row)}
+      >
+        Borrow
+      </IconButton>
     </Buttons>
   );
 
@@ -209,6 +239,7 @@ export default function Cream() {
 
   const allAssetsTable = {
     title: 'All Assets',
+    rowClickHandler: supplyRowClickHandler,
     columns: [
       { key: 'asset', transform: tokenTransform },
       {
@@ -227,6 +258,10 @@ export default function Cream() {
         key: 'actions',
         alias: '',
         transform: allActionsTransform,
+      },
+      {
+        key: 'collateral',
+        transform: collateralTransform,
       },
     ],
     rows: borrowDataSorted,
