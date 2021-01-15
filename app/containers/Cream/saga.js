@@ -4,7 +4,12 @@ import CErc20DelegatorAbi from 'abi/CErc20Delegator.json';
 import erc20Abi from 'abi/erc20.json';
 import { useSelector } from 'react-redux';
 import { selectAccount } from 'containers/ConnectionProvider/selectors';
-import { selectReady, selectContractData } from 'containers/App/selectors';
+import {
+  selectReady,
+  selectContractData,
+  selectContractDataComplex,
+  selectContracts,
+} from 'containers/App/selectors';
 import { APP_READY } from 'containers/App/constants';
 import {
   COMPTROLLER_ADDRESS,
@@ -105,7 +110,13 @@ function* subscribeToCreamData(action) {
       namespace: 'creamComptroller',
       abi: comptrollerAbi,
       addresses: [COMPTROLLER_ADDRESS],
-
+      allWriteMethods: true,
+      allReadMethods: true,
+      writeMethods: [
+        {
+          name: 'enterMarkets',
+        },
+      ],
       readMethods: _.concat(
         [
           {
@@ -162,14 +173,12 @@ function* subscribeToCreamData(action) {
   yield put(addContracts(subscriptions));
 }
 
-function* executeEnterMarkets(action) {
+function* executeEnterMarkets({ cTokenAddress }) {
   const account = yield select(selectAccount());
-  const web3 = _.get(action, 'web3');
-  const creamComptrollerContract = new web3.eth.Contract(
-    comptrollerAbi,
-    COMPTROLLER_ADDRESS,
+  const creamComptrollerContract = yield select(
+    selectContractData(COMPTROLLER_ADDRESS),
   );
-  const cTokenAddress = _.get(action, 'cTokenAddress');
+  console.log(creamComptrollerContract);
   console.log(cTokenAddress);
   yield call(
     creamComptrollerContract.methods.enterMarkets([cTokenAddress]).send,
@@ -177,7 +186,7 @@ function* executeEnterMarkets(action) {
   );
 }
 
-function* approveTxSpend(tokenContractAddress, spenderAddress) {
+function* approveTxSpend({ tokenContractAddress, spenderAddress }) {
   const account = yield select(selectAccount());
   const contract = yield select(selectContractData(tokenContractAddress));
   yield call(contract.methods.approve.cacheSend, spenderAddress, MAX_UINT256, {

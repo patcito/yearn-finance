@@ -21,10 +21,9 @@ export function initializeCream() {
   };
 }
 
-export function creamEnterMarkets(web3, cTokenAddress) {
+export function creamEnterMarkets(cTokenAddress) {
   return {
     type: CREAM_ENTER_MARKETS,
-    web3,
     cTokenAddress,
   };
 }

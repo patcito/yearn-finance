@@ -188,7 +188,7 @@ export default function Cream() {
               // TODO: Exit Market, meh
               return;
             }
-            dispatch(creamEnterMarkets(web3, creamCTokenAddress));
+            dispatch(creamEnterMarkets(creamCTokenAddress));
           }}
         >
           Enter Market/Enable
