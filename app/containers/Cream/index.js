@@ -23,7 +23,7 @@ import { useAccount, useWeb3 } from 'containers/ConnectionProvider/hooks';
 import ButtonFilled from 'components/ButtonFilled';
 import { flattenData } from 'utils/contracts';
 import saga from './saga';
-import { initializeCream, creamEnterMarkets } from './actions';
+import { initializeCream, creamEnterMarkets, approveTxSpend } from './actions';
 
 const MAX_UINT256 = new BigNumber(2)
   .pow(256)
@@ -142,6 +142,10 @@ export default function Cream() {
     );
   };
 
+  const approveToken = async (tokenContractAddress, creamCTokenAddress) => {
+    dispatch(approveTxSpend(tokenContractAddress, creamCTokenAddress));
+  };
+
   const allActionsTransform = (_rowValue, rowData) => {
     const creamCTokenAddress = _.get(rowData, 'creamCTokenAddress');
     const token = _.get(rowData, 'asset');
@@ -156,18 +160,6 @@ export default function Cream() {
       creamCTokenAddress,
     );
 
-    const erc20Contract = new web3.eth.Contract(erc20Abi, tokenContractAddress);
-
-    const approveToken = async () => {
-      try {
-        await erc20Contract.methods
-          .approve(creamCTokenAddress, MAX_UINT256)
-          .send({ from: account });
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
     let enableCollateral;
 
     if (marketEntered) {
@@ -178,7 +170,9 @@ export default function Cream() {
           <ButtonFilled
             variant="contained"
             color="primary"
-            onClick={approveToken}
+            onClick={() =>
+              approveToken(tokenContractAddress, creamCTokenAddress)
+            }
           >
             Approve Token
           </ButtonFilled>

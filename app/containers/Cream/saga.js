@@ -4,13 +4,14 @@ import CErc20DelegatorAbi from 'abi/CErc20Delegator.json';
 import erc20Abi from 'abi/erc20.json';
 import { useSelector } from 'react-redux';
 import { selectAccount } from 'containers/ConnectionProvider/selectors';
-import { selectReady } from 'containers/App/selectors';
+import { selectReady, selectContractData } from 'containers/App/selectors';
 import { APP_READY } from 'containers/App/constants';
 import {
   COMPTROLLER_ADDRESS,
   PRICE_ORACLE_ADDRESS,
   INITIALIZE_CREAM,
   CREAM_ENTER_MARKETS,
+  CREAM_APPROVE_TX,
 } from 'containers/Cream/constants';
 
 import { addContracts } from 'containers/DrizzleProvider/actions';
@@ -23,6 +24,11 @@ import {
   getContext,
 } from 'redux-saga/effects';
 import BigNumber from 'bignumber.js';
+
+const MAX_UINT256 = new BigNumber(2)
+  .pow(256)
+  .minus(1)
+  .toFixed(0);
 
 function* subscribeToCreamData(action) {
   const initialized = yield getContext('initialized');
@@ -171,8 +177,17 @@ function* executeEnterMarkets(action) {
   );
 }
 
+function* approveTxSpend(tokenContractAddress, spenderAddress) {
+  const account = yield select(selectAccount());
+  const contract = yield select(selectContractData(tokenContractAddress));
+  yield call(contract.methods.approve.cacheSend, spenderAddress, MAX_UINT256, {
+    from: account,
+  });
+}
+
 export default function* watchers() {
   yield takeLatest(APP_READY, subscribeToCreamData);
   yield takeLatest(INITIALIZE_CREAM, subscribeToCreamData);
+  yield takeLatest(CREAM_APPROVE_TX, approveTxSpend);
   yield takeLatest(CREAM_ENTER_MARKETS, executeEnterMarkets);
 }

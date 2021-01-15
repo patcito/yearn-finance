@@ -9,7 +9,11 @@
 //   };
 // }
 
-import { CREAM_ENTER_MARKETS, INITIALIZE_CREAM } from './constants';
+import {
+  CREAM_ENTER_MARKETS,
+  INITIALIZE_CREAM,
+  CREAM_APPROVE_TX,
+} from './constants';
 
 export function initializeCream() {
   return {
@@ -22,5 +26,13 @@ export function creamEnterMarkets(web3, cTokenAddress) {
     type: CREAM_ENTER_MARKETS,
     web3,
     cTokenAddress,
+  };
+}
+
+export function approveTxSpend(tokenContractAddress, spenderAddress) {
+  return {
+    type: CREAM_APPROVE_TX,
+    tokenContractAddress,
+    spenderAddress,
   };
 }
