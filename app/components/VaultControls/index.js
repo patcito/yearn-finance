@@ -186,6 +186,9 @@ export default function VaultControls(props) {
   const [selectedPickleTokenType, setSelectedPickleTokenType] = useState(
     tokenOptions[0],
   );
+  const [pickleUnstakeGweiAmount, setPickleUnstakeGweiAmount] = useState(0);
+  const [pickleUnstakeAmount, setPickleUnstakeAmount] = useState(0);
+
   const [pickleDepositGweiAmount, setPickleDepositGweiAmount] = useState(0);
 
   const [pickleDepositAmount, setPickleDepositAmount] = useState(0);
@@ -302,9 +305,27 @@ export default function VaultControls(props) {
     setDepositGweiAmount(0);
     setWithdrawalGweiAmount(0);
   }, [walletBalance, vaultBalance]);
+  useEffect(() => {
+    0xbd17b1ce622d73bd438b9e658aca5996dc394b0d;
+  });
 
+  const unstakeMasterChef = () => {
+    const unstakeParams = {
+      vaultContract: pickleContractsData.masterChefContract,
+      withdrawalAmount: pickleUnstakeGweiAmount,
+      decimals: pickleContractsData.decimals,
+      pureEthereum,
+      unstakePickle: true,
+    };
+    console.log(`Withdrawing:`, withdrawalGweiAmount);
+    console.log(`Withdrawing contract:`, vaultContract);
+    console.log('unstakeParams', unstakeParams);
+    dispatch(withdrawFromVault(unstakeParams));
+  };
   const withdraw = () => {
     console.log(`Withdrawing:`, withdrawalGweiAmount);
+    console.log(`Withdrawing contract:`, vaultContract);
+
     if (
       selectedWithdrawToken.address.toLowerCase() ===
       vault.token.address.toLowerCase()
@@ -391,25 +412,42 @@ export default function VaultControls(props) {
 
   if (vaultIsPickle) {
     let maxAmount = 0;
-    if (selectedPickleTokenType.value === 'eth') {
-      maxAmount = pickleContractsData.ethBalanceRaw;
-    } else if (selectedPickleTokenType.value === 'crv') {
-      maxAmount = pickleContractsData.crvBalanceRaw;
-    }
+    let stakedMaxAmount = 0;
+    stakedMaxAmount = pickleContractsData.pickleMasterChefDepositedRaw;
+    maxAmount = pickleContractsData.pickleMasterChefDepositedRaw;
     const pickleDescriptions = [
       {
+        balance: pickleContractsData.pickleMasterChefDeposited,
         main: '1. You have to unstake your LP Tokens',
         sub: 'Available Pickle SLP: ',
+        buttonLabel: 'Unstake',
+        maxAmount: pickleContractsData.pickleMasterChefDepositedRaw,
+        amount: pickleUnstakeAmount,
+        amountSetter: setPickleUnstakeAmount,
+        gweiAmountSetter: setPickleUnstakeGweiAmount,
+        buttonFunction: unstakeMasterChef,
       },
       {
+        balance: walletBalance,
         main:
           '2. Then approve and migrate from yveCRV-ETH LP into yvBOOST-ETH LP to enjoy 🍣 and 🥒 rewards',
         sub: 'Available SLP: ',
+        buttonLabel: 'Approve and Migrate',
+        maxAmount: walletBalance,
+        amount: pickleDepositAmount,
+        amountSetter: setPickleDepositAmount,
+        gweiAmountSetter: setPickleDepositGweiAmount,
       },
       {
+        balance: 0,
         main:
           '3. Last step! After the previous transaction completes, approve and stake your Pickle LPs using the box below',
         sub: 'Available Pickle SLP: ',
+        buttonLabel: 'Approve and Stake',
+        maxAmount: walletBalance,
+        amount: () => {},
+        amountSetter: () => {},
+        gweiAmountSetter: () => {},
       },
     ];
     const pickleNote =
@@ -423,17 +461,20 @@ export default function VaultControls(props) {
               <Label fontSize={16}>{description.main}</Label>
               <PickleControl>
                 <Grid xs={12} md={6}>
-                  <Balance amount={walletBalance} prefix={description.sub} />
+                  <Balance
+                    amount={description.balance}
+                    prefix={description.sub}
+                  />
                   <ActionGroup
                     direction={isScreenMd ? 'row' : 'column'}
                     alignItems="center"
                   >
                     <Box width={1}>
                       <AmountField
-                        amount={pickleDepositAmount}
-                        amountSetter={setPickleDepositAmount}
-                        gweiAmountSetter={setPickleDepositGweiAmount}
-                        maxAmount={pickleContractsData.pickleJarBalanceRaw}
+                        amount={description.amount}
+                        amountSetter={description.amountSetter}
+                        gweiAmountSetter={description.gweiAmountSetter}
+                        maxAmount={description.maxAmount}
                         decimals={decimals}
                         placeholder={'Amount'}
                       />
@@ -444,15 +485,9 @@ export default function VaultControls(props) {
                         disabled={
                           !vaultContract || !tokenContract || !!depositsDisabled
                         }
-                        handler={depositPickleFarm}
-                        text={
-                          pickleContractsData.pickleJarAllowance !==
-                            undefined &&
-                          pickleContractsData.pickleJarAllowance !== '0'
-                            ? 'Deposit'
-                            : 'Approve'
-                        }
-                        title="Deposit into vault"
+                        handler={description.buttonFunction}
+                        text={description.buttonLabel}
+                        title={description.buttonLabel}
                         showTooltip
                         tooltipText={
                           depositsDisabled ||
@@ -824,6 +859,13 @@ function AmountField({
       }
       placeholder={placeholder}
       onChange={(evt) => {
+        console.log('MAXAMOUT shti', maxAmount);
+        console.log('MAXAMOUT value shti', evt.target.value);
+        console.log('MAXAMOUT value shti decimals', decimals);
+        console.log(
+          'MAXAMOUT value normalized shti',
+          getNormalizedAmount(maxAmount, decimals),
+        );
         amountSetter(evt.target.value);
 
         if (evt.target.value) {

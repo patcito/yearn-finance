@@ -119,6 +119,7 @@ function* withdrawFromVault(action) {
     withdrawalAmount,
     decimals,
     pureEthereum,
+    unstakePickle,
   } = action.payload;
 
   const account = yield select(selectAccount());
@@ -146,13 +147,24 @@ function* withdrawFromVault(action) {
 
   try {
     if (!pureEthereum) {
-      yield call(
-        vaultContract.methods.withdraw.cacheSend,
-        sharesForWithdrawal,
-        {
-          from: account,
-        },
-      );
+      if (unstakePickle) {
+        yield call(
+          vaultContract.methods.withdraw.cacheSend,
+          26,
+          withdrawalAmount,
+          {
+            from: account,
+          },
+        );
+      } else {
+        yield call(
+          vaultContract.methods.withdraw.cacheSend,
+          sharesForWithdrawal,
+          {
+            from: account,
+          },
+        );
+      }
     } else {
       const { zapContract } = vaultContract;
       if (zapContract) {

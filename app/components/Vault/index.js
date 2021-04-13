@@ -352,10 +352,11 @@ const Vault = (props) => {
           .toFixed(2)
       : '0.00';
 
+    const masterChefBalanceRaw = masterChefContractData
+      ? _.get(masterChefContractData, 'userInfo.amount')
+      : '0.00';
     const masterChefBalance = masterChefContractData
-      ? new BigNumber(_.get(masterChefContractData, 'userInfo.amount'))
-          .dividedBy(10 ** decimals)
-          .toFixed(2)
+      ? new BigNumber(masterChefBalanceRaw).dividedBy(10 ** decimals).toFixed(2)
       : '0.00';
 
     pickleContractsData = {
@@ -367,8 +368,10 @@ const Vault = (props) => {
       pickleJarBalanceRaw,
       pickleJarAllowance,
       pickleMasterChefDeposited: masterChefBalance,
+      pickleMasterChefDepositedRaw: masterChefBalanceRaw,
       crvBalance: parsedCrvBalance,
       crvBalanceRaw,
+      decimals: decimals,
       crvAllowance: crvTokenAllowance,
       ethBalance: parsedEthBalance,
       ethBalanceRaw: ethBalance,
