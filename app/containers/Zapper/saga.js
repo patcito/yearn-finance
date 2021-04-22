@@ -32,7 +32,18 @@ function* initializeZapper() {
 
   try {
     const tokens = yield call(request, getZapperApi('/prices'));
-    const vaults = yield call(request, getZapperApi('/vault-stats/yearn'));
+    const yvaults = yield call(request, getZapperApi('/vault-stats/yearn'));
+    const pickleVaults = yield call(
+      request,
+      getZapperApi('/vault-stats/pickle', {
+        addresses: [account],
+      }),
+    );
+    console.log('noCONCAT VAULTS', yvaults);
+    console.log('noCONCAT pickle VAULTS', pickleVaults);
+    const vaults = yvaults.concat(pickleVaults);
+    console.log('CONCAT VAULTS', vaults);
+    console.log('CONCAT pickle VAULTS', pickleVaults);
     const balances = yield call(
       request,
       getZapperApi('/balances/tokens', {
@@ -41,7 +52,12 @@ function* initializeZapper() {
     );
 
     yield put(
-      zapperDataLoaded({ tokens, vaults, balances: balances[account] }),
+      zapperDataLoaded({
+        tokens,
+        vaults,
+        balances: balances[account],
+        pickleVaults,
+      }),
     );
   } catch (err) {
     console.log(err);
@@ -55,7 +71,10 @@ function* zapIn(action) {
     sellTokenAddress,
     sellAmount,
     slippagePercentage,
+    protocol,
   } = action.payload;
+
+  const zapProtocol = protocol ? protocol : 'yearn';
 
   const ownerAddress = yield select(selectAccount());
   const isSellTokenEth = isEth(sellTokenAddress);
@@ -73,7 +92,7 @@ function* zapIn(action) {
     if (!isSellTokenEth) {
       const approvalState = yield call(
         request,
-        getZapperApi('/zap-in/yearn/approval-state', {
+        getZapperApi(`/zap-in/${zapProtocol}/approval-state`, {
           sellTokenAddress,
           ownerAddress,
         }),
@@ -82,7 +101,7 @@ function* zapIn(action) {
       if (!approvalState.isApproved) {
         const approvalTransaction = yield call(
           request,
-          getZapperApi('/zap-in/yearn/approval-transaction', {
+          getZapperApi(`/zap-in/${zapProtocol}/approval-transaction`, {
             gasPrice,
             sellTokenAddress,
             ownerAddress,
@@ -94,8 +113,8 @@ function* zapIn(action) {
 
     const zapInTransaction = yield call(
       request,
-      getZapperApi('/zap-in/yearn/transaction', {
-        slippagePercentage,
+      getZapperApi(`/zap-in/${zapProtocol}/transaction`, {
+        slippagePercentage: 0.3,
         gasPrice,
         poolAddress,
         sellTokenAddress,
@@ -103,9 +122,11 @@ function* zapIn(action) {
         ownerAddress,
       }),
     );
+    console.log('faiiiiiiiiiil', zapInTransaction);
     yield call(web3.eth.sendTransaction, zapInTransaction);
   } catch (error) {
     console.log('Zap Failed', error);
+    console.log('faiiiiiiiiiil', error.message);
     yield put(
       zapInError({ message: `Zap Failed. ${error.message}`, poolAddress }),
     );
@@ -155,7 +176,7 @@ function* zapOut(action) {
 
     const approvalState = yield call(
       request,
-      getZapperApi('/zap-out/yearn/approval-state', {
+      getZapperApi(`/zap-out/${zapProtocol}/approval-state`, {
         sellTokenAddress: vaultContract.address.toLowerCase(),
         ownerAddress,
       }),
@@ -164,7 +185,7 @@ function* zapOut(action) {
     if (!approvalState.isApproved) {
       const approvalTransaction = yield call(
         request,
-        getZapperApi('/zap-out/yearn/approval-transaction', {
+        getZapperApi(`/zap-out/${zapProtocol}/approval-transaction`, {
           gasPrice,
           sellTokenAddress: vaultContract.address.toLowerCase(),
           ownerAddress,
@@ -175,7 +196,7 @@ function* zapOut(action) {
 
     const zapOutTransaction = yield call(
       request,
-      getZapperApi('/zap-out/yearn/transaction', {
+      getZapperApi(`/zap-out/${zapProtocol}/transaction`, {
         slippagePercentage,
         gasPrice,
         poolAddress: vaultContract.address.toLowerCase(),

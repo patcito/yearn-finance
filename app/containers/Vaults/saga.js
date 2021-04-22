@@ -29,7 +29,7 @@ import {
   DEPOSIT_PICKLE_SLP_IN_FARM,
   MASTER_CHEFF_POOL_ID,
 } from './constants';
-
+import DrizzleContract from '../../drizzle/store/DrizzleContract';
 // TODO: Do better... never hard-code vault addresses
 const v1WethVaultAddress = '0xe1237aA7f535b0CC33Fd973D66cBf830354D16c7';
 const ethAddress = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
@@ -299,27 +299,38 @@ function* zapPickle(action) {
 }
 
 function* depositPickleSLPInFarm(action) {
-  const { vaultContract, tokenContract, depositAmount } = action.payload;
+  let {
+    vaultContract,
+    tokenContract,
+    depositAmount,
+    allowance,
+  } = action.payload;
 
   const account = yield select(selectAccount());
   const tokenAllowance = yield select(
-    selectTokenAllowance(tokenContract.address, vaultContract.address),
+    selectTokenAllowance(tokenContract._address, vaultContract.address),
   );
 
-  const vaultAllowedToSpendToken = tokenAllowance > 0;
+  console.log(
+    'tokenAllowance',
+    tokenAllowance,
+    tokenContract._address,
+    vaultContract.address,
+    depositAmount,
+  );
+  const vaultAllowedToSpendToken = allowance > 0;
 
   try {
     if (!vaultAllowedToSpendToken) {
-      yield call(approveTxSpend, tokenContract, account, vaultContract.address);
+      yield call(
+        tokenContract.methods.approve(vaultContract.address, depositAmount)
+          .send,
+        { from: account },
+      );
     }
-    yield call(
-      vaultContract.methods.deposit.cacheSend,
-      MASTER_CHEFF_POOL_ID,
-      depositAmount,
-      {
-        from: account,
-      },
-    );
+    yield call(vaultContract.methods.deposit.cacheSend, 38, depositAmount, {
+      from: account,
+    });
   } catch (error) {
     console.error(error);
   }

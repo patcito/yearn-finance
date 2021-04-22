@@ -257,7 +257,27 @@ const Vaults = (props) => {
       <VaultsHeader requestSort={requestSort} sortConfig={sortConfig} />
     );
   }
-
+  let yboostLPVault = {};
+  let yvToken = {};
+  amplifyVaultItems.map((v) => {
+    console.log('vvv', v);
+    if (v.symbol === 'yvBOOST') {
+      yboostLPVault = v;
+      yboostLPVault = {
+        ...yboostLPVault,
+        ...{
+          type: 'v1',
+          displayName: 'yvBOOST - ETH LP',
+          isYVBoost: true,
+          symbol: 'yvBOOST-ETH',
+          address: '0xc695f73c1862e050059367B2E64489E66c525983',
+        },
+      };
+    } else if (v.symbol === 'yveCRV') {
+    }
+  });
+  amplifyVaultItems.unshift(yboostLPVault);
+  console.log('allv', amplifyVaultItems);
   let warning;
   if (showDevVaults) {
     warning = <Warning>Experimental vaults. Use at your own risk.</Warning>;
@@ -269,6 +289,7 @@ const Vaults = (props) => {
           <AmplifyWrapper
             showDevVaults={showDevVaults}
             walletConnected={walletConnected}
+            account={account}
             vaultItems={amplifyVaultItems}
             backscratcherAlias={backscratcherAlias}
             pickleVaultAlias={pickleVaultAlias}
@@ -328,6 +349,7 @@ const AmplifyWrapper = (props) => {
     vaultItems,
     backscratcherAlias,
     pickleVaultAlias,
+    account,
   } = props;
   const backscratcherVault = useSelector(selectBackscratcherVault());
   const pickleVault = useSelector(selectPickleVault());
@@ -352,6 +374,8 @@ const AmplifyWrapper = (props) => {
         active={currentEventKey === vaultKey}
         showDevVaults={showDevVaults}
         amplifyVault
+        walletConnected={walletConnected}
+        account={account}
       />
     );
   };
